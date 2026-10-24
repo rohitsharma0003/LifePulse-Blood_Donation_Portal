@@ -10,19 +10,33 @@ try {
 }
 
 const connectDB = async () => {
+  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/blood_donation_db';
+
+  if (!process.env.MONGO_URI) {
+    console.warn('\n⚠️  [MONGO_URI NOT SET]: process.env.MONGO_URI is undefined!');
+    console.warn('   If running on Render, add MONGO_URI in your Render Dashboard -> Environment.\n');
+  } else {
+    const maskedUri = mongoUri.replace(/:([^:@]+)@/, ':****@');
+    console.log(`[MongoDB] Initializing connection to: ${maskedUri}`);
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/blood_donation_db');
-    console.log(`[MongoDB] Connected successfully to host: ${conn.connection.host}`);
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 8000,
+      socketTimeoutMS: 45000
+    });
+    console.log(`✅ [MongoDB] Connected successfully to host: ${conn.connection.host}`);
   } catch (error) {
     console.error(`\n❌ [MongoDB Connection Error] ${error.message}`);
-    if (error.message.includes('ECONNREFUSED') || error.message.includes('EACCES')) {
+    if (error.message.includes('ECONNREFUSED') || error.message.includes('EACCES') || error.message.includes('buffering timed out')) {
       console.log('\n================================================================');
-      console.log('💡 MONGODB NOT DETECTED ON PORT 27017:');
-      console.log('1. Using MongoDB Atlas (Cloud - Recommended):');
-      console.log('   Set MONGO_URI in backend/.env to your Atlas connection string:');
-      console.log('   MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/blood_donation_db');
-      console.log('2. Using Local MongoDB on Windows:');
-      console.log('   Run: net start MongoDB (or mongod --dbpath "C:\\data\\db")');
+      console.log('💡 DATABASE CONNECTION CHECKLIST:');
+      console.log('1. RENDER DASHBOARD:');
+      console.log('   Ensure MONGO_URI is added in Environment Variables:');
+      console.log('   MONGO_URI=mongodb+srv://rohitmpc2004_db_user:rohitdb@cluster0.8sh8j84.mongodb.net/blood_donation_db?retryWrites=true&w=majority');
+      console.log('2. MONGODB ATLAS NETWORK ACCESS:');
+      console.log('   Render uses dynamic cloud IPs. In Atlas -> Network Access,');
+      console.log('   ensure 0.0.0.0/0 (Allow Access from Anywhere) is active.');
       console.log('================================================================\n');
     }
   }

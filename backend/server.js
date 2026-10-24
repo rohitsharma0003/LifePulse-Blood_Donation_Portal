@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import mongoose from 'mongoose';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
@@ -26,6 +27,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Database connection gatekeeper for API routes
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith('/api') && req.originalUrl !== '/api/health') {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is connecting or not configured. Ensure MONGO_URI is set in Render Environment Variables and Atlas IP Whitelist (0.0.0.0/0) is enabled.'
+      });
+    }
+  }
+  next();
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
@@ -33,8 +47,10 @@ app.use('/api/responses', responseRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.status(200).json({
     status: 'healthy',
+    database: dbStatus,
     timestamp: new Date().toISOString(),
     service: 'Blood Donation Portal API'
   });
