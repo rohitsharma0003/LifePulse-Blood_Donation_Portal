@@ -1,9 +1,10 @@
 services:
   - type: web
     name: blood-donation-portal
-    env: docker
+    env: node
     plan: free
-    dockerfilePath: Dockerfile
+    buildCommand: npm run build
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: PORT
@@ -14,3 +15,5 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/src/.cache/puppeteer
