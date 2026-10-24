@@ -23,8 +23,8 @@ const Register = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [bloodGroup, setBloodGroup] = useState('O+');
-  const [longitude, setLongitude] = useState('77.5946');
-  const [latitude, setLatitude] = useState('12.9716');
+  const [longitude, setLongitude] = useState('78.4867');
+  const [latitude, setLatitude] = useState('17.3850');
   const [isDonorAvailable, setIsDonorAvailable] = useState(true);
 
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -39,9 +39,9 @@ const Register = () => {
 
   const handleCaptureGPS = () => {
     if (!navigator.geolocation) {
-      // Keep sensible default coordinates
-      setLongitude('77.5946');
-      setLatitude('12.9716');
+      // Keep sensible default coordinates (Hyderabad center)
+      setLongitude('78.4867');
+      setLatitude('17.3850');
       return;
     }
 
@@ -60,9 +60,9 @@ const Register = () => {
       },
       (err) => {
         console.warn('Geolocation capture failed or denied:', err);
-        // Fallback default coordinates (Bengaluru healthcare hub)
-        setLongitude('77.5946');
-        setLatitude('12.9716');
+        // Fallback default coordinates (Hyderabad healthcare hub)
+        setLongitude('78.4867');
+        setLatitude('17.3850');
         setIsDetectingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
@@ -276,6 +276,29 @@ const Register = () => {
                     className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 pt-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLongitude('78.4867');
+                    setLatitude('17.3850');
+                  }}
+                  className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition"
+                >
+                  Hyderabad
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLongitude('77.5946');
+                    setLatitude('12.9716');
+                  }}
+                  className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition"
+                >
+                  Bengaluru
+                </button>
               </div>
               <p className="text-[11px] text-slate-400">
                 Stored in standard GeoJSON [longitude, latitude] format for 15 km 2DSphere radius queries.

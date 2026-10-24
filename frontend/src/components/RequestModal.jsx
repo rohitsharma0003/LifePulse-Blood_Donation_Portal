@@ -48,11 +48,11 @@ const RequestModal = ({ isOpen, onClose, onCreated }) => {
       },
       (err) => {
         console.warn('Geolocation capture failed:', err);
-        // Fallback to sample coordinates for Bengaluru hospital hub if GPS permission denied
-        setLongitude(77.5946);
-        setLatitude(12.9716);
+        // Fallback to sample coordinates for Hyderabad healthcare hub if GPS permission denied
+        setLongitude(78.4867);
+        setLatitude(17.3850);
         setIsDetectingLocation(false);
-        setError('GPS permission denied or unavailable. Sample coordinates set for Bengaluru; you can manually edit them below.');
+        setError('GPS permission denied or unavailable. Default coordinates populated for Hyderabad; you can manually edit them or choose a city preset.');
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -254,6 +254,31 @@ const RequestModal = ({ isOpen, onClose, onCreated }) => {
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
+            </div>
+            <div className="flex items-center space-x-2 pt-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Presets:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setLongitude(78.4867);
+                  setLatitude(17.3850);
+                  setHospitalAddress(prev => prev || 'NIMS Hospital, Punjagutta, Hyderabad');
+                }}
+                className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition"
+              >
+                Hyderabad
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLongitude(77.5946);
+                  setLatitude(12.9716);
+                  setHospitalAddress(prev => prev || 'Manipal Hospital, HAL Airport Rd, Bengaluru');
+                }}
+                className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition"
+              >
+                Bengaluru
+              </button>
             </div>
             <p className="text-[11px] text-slate-400">
               Used for the 15 km MongoDB 2DSphere query to alert nearby available donors.
