@@ -1,0 +1,20 @@
+node_modules/
+**/node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment files
+.env
+backend/.env
+frontend/.env
+
+# Logs & Puppeteer auth cache
+*.log
+npm-debug.log*
+.wwebjs_auth/
+.wwebjs_cache/
+.cache/
+
+# OS metadata
+.DS_Store
+Thumbs.db

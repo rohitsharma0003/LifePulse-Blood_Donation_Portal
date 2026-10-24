@@ -1,6 +1,6 @@
 FROM node:20-bookworm-slim
 
-# Install Chromium and required fonts cleanly
+# Install Chromium and runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     ca-certificates \
@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxss1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Tell Puppeteer to use the installed Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
@@ -20,16 +19,16 @@ WORKDIR /app
 COPY frontend/package*.json ./frontend/
 COPY backend/package*.json ./backend/
 
-# Install dependencies
+# Clean install dependencies in Linux environment
 RUN cd frontend && npm install
 RUN cd backend && npm install
 
-# Copy application source
+# Copy application source code (node_modules excluded by .dockerignore)
 COPY frontend/ ./frontend/
 COPY backend/ ./backend/
 
-# Build frontend production bundle into frontend/dist
-RUN cd frontend && npm run build
+# Build React production bundle
+RUN cd frontend && npx vite build
 
 WORKDIR /app/backend
 
