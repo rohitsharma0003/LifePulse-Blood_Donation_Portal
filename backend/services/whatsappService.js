@@ -5,59 +5,76 @@ const { Client, LocalAuth } = pkg;
 
 let isClientReady = false;
 
+const puppeteerArgs = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-accelerated-2d-canvas',
+  '--no-first-run',
+  '--no-zygote',
+  '--single-process',
+  '--disable-gpu'
+];
+
+const puppeteerConfig = {
+  headless: true,
+  args: puppeteerArgs
+};
+
+// Use installed Chromium if path is specified (e.g. Docker / Linux environments)
+if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+  puppeteerConfig.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+}
+
 // Initialize WhatsApp Web Client with LocalAuth for session persistence
-const client = new Client({
-  authStrategy: new LocalAuth({
-    dataPath: './.wwebjs_auth'
-  }),
-  puppeteer: {
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--disable-gpu'
-    ]
-  }
-});
-
-client.on('qr', (qr) => {
-  console.log('\n======================================================');
-  console.log(' 📲 SCAN THIS QR CODE WITH WHATSAPP TO CONNECT');
-  console.log('======================================================');
-  qrcode.generate(qr, { small: true });
-  console.log('======================================================\n');
-});
-
-client.on('ready', () => {
-  isClientReady = true;
-  console.log('✅ [WhatsApp Web] Client is ready and authenticated!');
-});
-
-client.on('authenticated', () => {
-  console.log('🔐 [WhatsApp Web] Session authenticated successfully.');
-});
-
-client.on('auth_failure', (msg) => {
-  console.error('❌ [WhatsApp Web] Authentication failure:', msg);
-  isClientReady = false;
-});
-
-client.on('disconnected', (reason) => {
-  console.warn('⚠️ [WhatsApp Web] Client disconnected:', reason);
-  isClientReady = false;
-});
-
-// Initialize client asynchronously and catch errors safely to prevent server crash
+let client;
 try {
-  client.initialize().catch((err) => {
-    console.warn(`[WhatsApp Web Notice] Initialization background status: ${err.message}`);
+  client = new Client({
+    authStrategy: new LocalAuth({
+      dataPath: './.wwebjs_auth'
+    }),
+    puppeteer: puppeteerConfig
   });
-} catch (initErr) {
-  console.warn(`[WhatsApp Web Notice] Client init failed: ${initErr.message}`);
+
+  client.on('qr', (qr) => {
+    console.log('\n======================================================');
+    console.log(' 📲 SCAN THIS QR CODE WITH WHATSAPP TO CONNECT');
+    console.log('======================================================');
+    qrcode.generate(qr, { small: true });
+    console.log('======================================================\n');
+  });
+
+  client.on('ready', () => {
+    isClientReady = true;
+    console.log('✅ [WhatsApp Web] Client is ready and authenticated!');
+  });
+
+  client.on('authenticated', () => {
+    console.log('🔐 [WhatsApp Web] Session authenticated successfully.');
+  });
+
+  client.on('auth_failure', (msg) => {
+    console.error('❌ [WhatsApp Web] Authentication failure:', msg);
+    isClientReady = false;
+  });
+
+  client.on('disconnected', (reason) => {
+    console.warn('⚠️ [WhatsApp Web] Client disconnected:', reason);
+    isClientReady = false;
+  });
+
+  // Delay client initialization so Express starts instantly and passes Render health checks
+  setTimeout(() => {
+    try {
+      client.initialize().catch((err) => {
+        console.warn(`[WhatsApp Web Notice] Client init deferred: ${err.message}. Outbound messages will fallback to server console.`);
+      });
+    } catch (err) {
+      console.warn(`[WhatsApp Web Notice] Deferred init caught: ${err.message}`);
+    }
+  }, 3000);
+} catch (constructErr) {
+  console.warn(`[WhatsApp Web Notice] Client construction skipped: ${constructErr.message}`);
 }
 
 /**

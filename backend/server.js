@@ -93,11 +93,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// Guard against unhandled promise rejections crashing the server
+process.on('unhandledRejection', (reason, promise) => {
+  console.warn('[Process Warning] Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
-app.listen(PORT, () => {
+process.on('uncaughtException', (err) => {
+  console.error('[Process Error] Uncaught Exception:', err.message);
+});
+
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
   console.log(`\n======================================================`);
-  console.log(`🚀 Blood Donation Portal Server running on port ${PORT}`);
-  console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`🚀 Blood Donation Portal Server running on http://${HOST}:${PORT}`);
+  console.log(`📡 Health Check: http://${HOST}:${PORT}/api/health`);
   console.log(`======================================================\n`);
 });
